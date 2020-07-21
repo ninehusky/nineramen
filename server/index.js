@@ -5,6 +5,7 @@ const dotenv = require('dotenv').config();
 const cors = require('cors');
 
 const middlewares = require('./middlewares/middlewares');
+const auth = require('./auth/auth');
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use(cors({
 app.get('/', (req, res, next) => {
   res.send("Hello, world!");
 });
+
+app.use('/auth', auth);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
