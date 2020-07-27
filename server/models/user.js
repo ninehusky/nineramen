@@ -11,6 +11,7 @@ const userSchema = new Schema({
         ...requiredString,
         minlength: 5,
         maxlength: 20,
+        unique: true,
     },
     password: {
         ...requiredString,

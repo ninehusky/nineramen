@@ -5,6 +5,13 @@ function notFound(req, res, next) {
 }
 
 function errorHandler(err, req, res, next) {
+  if (err.code === 11000) {
+    if (err.message.includes('username')) {
+      err.message = `The username ${req.body.username} is already taken!`;
+    }
+  } else if (err.name === 'ValidationError') {
+    res.status(422);
+  }
   res.status(res.statusCode || 500);
   res.json({
     message: err.message,
