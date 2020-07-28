@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 
 const User = require('../models/user');
 
@@ -9,34 +10,28 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/login', passport.authenticate('local'), (req, res) => {
+  console.log('logging in...')
+  res.json({
+    message: 'logged in!',
+  });
+});
+
+
+// router.get('/login', passport.authenticate('local', {
+//   failureRedirect: '/login',
+//   }), (req, res) => {
+//   res.json({
+//     message: 'Logged in succesfully',
+//   });
+// });
+
 router.post('/signup', (req, res, next) => {
   User.create(req.body)
     .then((user) => {
       res.json(user);
     })
     .catch((error) => {
-      next(error);
-    });
-});
-
-router.get('/login', (req, res, next) => {
-  User.findOne({
-      username: req.body.username
-  })
-    .then((user) => {
-      if (!user) {
-        loginAuthorizationError(res, next);
-      }
-      user.comparePassword(req.body.password, (err, isMatch) => {
-        if (isMatch) {
-          res.json({
-            'success': 'youre in',
-          });
-        } else {
-          loginAuthorizationError(res, next);
-        }
-      });
-    }).catch((error) => {
       next(error);
     });
 });
