@@ -1,44 +1,40 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 
 const User = require('../models/user');
 
 router.get('/', (req, res) => {
-  res.json({
-    message: 'grr youve reacheed the auth endpoint',
-  });
-});
-
-router.post('/signup', (req, res, next) => {
-  User.create(req.body)
-    .then((user) => {
-      res.json(user);
-    })
-    .catch((error) => {
-      next(error);
+    res.json({
+        message: 'grr youve reacheed the auth endpoint',
     });
 });
 
 router.get('/login', (req, res, next) => {
-  User.findOne({
-      username: req.body.username
-  })
-    .then((user) => {
-      if (!user) {
-        loginAuthorizationError(res, next);
-      }
-      user.comparePassword(req.body.password, (err, isMatch) => {
-        if (isMatch) {
-          res.json({
-            'success': 'youre in',
-          });
-        } else {
-          loginAuthorizationError(res, next);
+    passport.authenticate('local', (err, user, info) => {
+    if (err) {
+        return next(err);
+    } else {
+        if (!user) {
+            res.status(401);
+            const error = new Error(info.message);
+            return next(error);
         }
-      });
-    }).catch((error) => {
-      next(error);
-    });
+        res.json({
+            message: 'logged in successfully!',
+        });
+    }
+    })(req, res, next)
+});
+
+router.post('/signup', (req, res, next) => {
+    User.create(req.body)
+        .then((user) => {
+            res.json(user);
+        })
+        .catch((error) => {
+            next(error);
+        });
 });
 
 /**
@@ -47,9 +43,8 @@ router.get('/login', (req, res, next) => {
  * @param {*} next - callback function
  */
 function loginAuthorizationError(res, next) {
-  res.status(401);
-  next(new Error('The username and/or password given is invalid.'));
+    res.status(401);
+    next(new Error('The username and/or password given is invalid.'));
 }
-
 
 module.exports = router;

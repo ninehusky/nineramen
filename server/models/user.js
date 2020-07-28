@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
 
+const passwordUtils = require('../utils/password-utils');
+
 const requiredString = {
     type: String,
     required: true,
@@ -27,22 +29,11 @@ const userSchema = new Schema({
 
 userSchema.pre('save', function (next) {
     const user = this;
-    const SALT_WORK_FACTOR = parseInt(process.env.SALT_WORK_FACTOR);
     if (!user.isModified('password')) {
         return next();
     }
-    bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
-        if (err) {
-            return next(err);
-        } 
-        bcrypt.hash(user.password, salt, (err, hash) => {
-            if (err) {
-                return next(err);
-            }
-            user.password = hash;
-            next();
-        });
-    });
+    user.password = passwordUtils.hashPassword(user.password);
+    next();
 });
 
 userSchema.post('save', (err, doc, next) => {
@@ -53,15 +44,10 @@ userSchema.post('save', (err, doc, next) => {
     }
 });
 
-userSchema.methods.comparePassword = function(password, next) {
-    bcrypt.compare(password, this.password, (err, isMatch) => {
-        if (err) {
-            return next(err);
-        }
-        next(null, isMatch);
-    })
+userSchema.methods.verifyPassword = function(password) {
+    if (passwordUtils.comparePassword(password)) {
+
+    }
 }
 
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);
