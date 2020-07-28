@@ -47,5 +47,4 @@ function loginAuthorizationError(res, next) {
     next(new Error('The username and/or password given is invalid.'));
 }
 
-
 module.exports = router;
