@@ -6,4 +6,7 @@ function hashPassword(password) {
     return bcrypt.hashSync(password, SALT_WORK_VALUE);
 };
 
-module.exports.hashPassword = hashPassword;
+
+module.exports = {
+    hashPassword,
+};

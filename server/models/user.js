@@ -4,8 +4,6 @@ const Schema = mongoose.Schema;
 
 const passwordUtils = require('../utils/password-utils');
 
-const SALT_WORK_FACTOR = parseInt(process.env.SALT_WORK_FACTOR) || 10;
-
 const requiredString = {
     type: String,
     required: true,
@@ -29,22 +27,13 @@ const userSchema = new Schema({
     },
 });
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', function (next) {
     const user = this;
     if (!user.isModified('password')) {
         return next();
     }
-    user.password = bcrypt.hashSync(user.password, 10); 
+    user.password = passwordUtils.hashPassword(user.password);
     next();
-    // passwordUtils.hashPassword(user.password)
-    //     .then((hashedPassword) => {
-    //         user.password = hashedPassword;
-    //         console.log('user passwd ', hashedPassword);
-    //         next();
-    //     })
-    //     .catch((error) => {
-    //         next(error);
-    //     });
 });
 
 userSchema.post('save', (err, doc, next) => {
@@ -54,5 +43,11 @@ userSchema.post('save', (err, doc, next) => {
         next();
     }
 });
+
+userSchema.methods.verifyPassword = function(password) {
+    if (passwordUtils.comparePassword(password)) {
+
+    }
+}
 
 module.exports = mongoose.model('User', userSchema);
