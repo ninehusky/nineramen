@@ -7,19 +7,13 @@ const bcrypt = require('bcryptjs');
 const passwordUtils = require('../utils/password-utils');
 const User = require('../models/user');
 
-const options = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: 'keyboard cat', // TODO: replace secret with something actually secret
-};
 
-
-// TODO: verify password during login
 passport.use(new LocalStrategy((username, password, done) => {
     User.findOne({
         username: username,
     }).then((user) => {
         if (!user) {
-            return done(null, false, { message: 'The username and/or password given is invalid.'});
+            return done(null, false, { message: 'The username and/or password given is invalid.' });
         }
         bcrypt.compare(password, user.password)
             .then((result) => {
@@ -33,12 +27,27 @@ passport.use(new LocalStrategy((username, password, done) => {
                 return done(error);
             });
     })
-    .catch((error) => {
-        return done(error);
-    });
+        .catch((error) => {
+            return done(error);
+        });
 }));
 
-// TODO: serialize
+const options = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.JWT_SECRET,
+};
+
+passport.use(new JwtStrategy(options, (jwt_payload, done) => {
+    User.findById(jwt_payload._id, (err, user) => {
+        if (err) {
+            done(err);
+        }
+        if (!user) {
+            done(null, false);
+        }
+        done(null, user);
+    });
+}));
 
 passport.serializeUser((user, done) => {
     done(null, user.id);
@@ -49,7 +58,3 @@ passport.deserializeUser((id, done) => {
         done(err, user);
     });
 })
-
-passport.use(new JwtStrategy(options, (jwt_payload, done) => {
-
-}));

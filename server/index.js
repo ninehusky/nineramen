@@ -7,11 +7,11 @@ const passport = require('passport');
 
 // connect to mongodb database
 require('./config/database');
-
 require('./config/passport');
 
 const middlewares = require('./middlewares/middlewares');
-const auth = require('./auth/auth');
+const auth = require('./routes/auth');
+const users = require('./routes/users');
 
 const app = express();
 app.use(express.json());
@@ -32,6 +32,7 @@ app.get('/', (req, res, next) => {
 });
 
 app.use('/auth', auth);
+app.use('/users', users);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
 
 const passwordUtils = require('../utils/password-utils');
@@ -44,10 +43,10 @@ userSchema.post('save', (err, doc, next) => {
     }
 });
 
-userSchema.methods.verifyPassword = function(password) {
-    if (passwordUtils.comparePassword(password)) {
-
-    }
-}
+// userSchema.methods.verifyPassword = function(password) {
+//     if (passwordUtils.comparePassword(password)) {
+// 
+//     }
+// }
 
 module.exports = mongoose.model('User', userSchema);

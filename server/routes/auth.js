@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
+const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
@@ -20,8 +21,20 @@ router.get('/login', (req, res, next) => {
             const error = new Error(info.message);
             return next(error);
         }
-        res.json({
-            message: 'logged in successfully!',
+        const payload = {
+            _id: user._id,
+            username: user.username,
+            userType: user.userType,
+        };
+        jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: '1d',
+        }, (err, token) => {
+            if (err) {
+                return next(err);
+            }
+            return res.json({
+                token: token,
+            });
         });
     }
     })(req, res, next)
