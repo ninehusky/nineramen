@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
 
 router.get('/:username', passport.authenticate('jwt'), (req, res, next) => {
     User.findOne({
-        username: req.params.username
+        username: req.params.username,
     })
         .then((user) => {
             if (!user) {
