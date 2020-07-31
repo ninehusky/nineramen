@@ -3,6 +3,8 @@ const Schema = mongoose.Schema;
 
 const passwordUtils = require('../utils/password-utils');
 
+const USER_POST_LIMIT = 50;
+
 const requiredString = {
     type: String,
     required: true,
@@ -30,6 +32,11 @@ const userSchema = new Schema({
         enum: ['user', 'admin'],
         default: 'user',
     },
+    postLimit: {
+        type: Number,
+        max: USER_POST_LIMIT,
+        default: USER_POST_LIMIT,
+    },
 });
 
 userSchema.pre('save', function (next) {
@@ -48,6 +55,11 @@ userSchema.post('save', (err, doc, next) => {
         next();
     }
 });
+
+userSchema.methods.resetPostLimit = function() {
+    const user = this;
+    user.postLimit = USER_POST_LIMIT;
+}
 
 // userSchema.methods.verifyPassword = function(password) {
 //     if (passwordUtils.comparePassword(password)) {
