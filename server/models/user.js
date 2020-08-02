@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const passwordUtils = require('../utils/password-utils');
 
-const USER_POST_LIMIT = 50;
+const USER_DAILY_ENTRY_LIMIT = 50;
 
 const requiredString = {
     type: String,
@@ -32,19 +32,20 @@ const userSchema = new Schema({
         enum: ['user', 'admin'],
         default: 'user',
     },
-    postLimit: {
+    remainingDailyEntries: {
         type: Number,
-        max: USER_POST_LIMIT,
-        default: USER_POST_LIMIT,
+        max: USER_DAILY_ENTRY_LIMIT,
+        min: [0, 'No more daily entries available for this user'],
+        default: USER_DAILY_ENTRY_LIMIT,
+
     },
 });
 
 userSchema.pre('save', function (next) {
     const user = this;
-    if (!user.isModified('password')) {
-        return next();
+    if (user.isModified('password')) {
+        user.password = passwordUtils.hashPassword(user.password);
     }
-    user.password = passwordUtils.hashPassword(user.password);
     next();
 });
 
@@ -56,9 +57,9 @@ userSchema.post('save', (err, doc, next) => {
     }
 });
 
-userSchema.methods.resetPostLimit = function() {
+userSchema.methods.resetEntryLimit = function() {
     const user = this;
-    user.postLimit = USER_POST_LIMIT;
+    user.remainingDailyEntries = USER_DAILY_ENTRY_LIMIT;
 }
 
 // userSchema.methods.verifyPassword = function(password) {

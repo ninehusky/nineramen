@@ -12,6 +12,7 @@ require('./config/passport');
 const middlewares = require('./middlewares/middlewares');
 const auth = require('./routes/auth');
 const users = require('./routes/users');
+const emojis = require('./routes/emojis');
 
 const app = express();
 app.use(express.json());
@@ -33,6 +34,7 @@ app.get('/', (req, res, next) => {
 
 app.use('/auth', auth);
 app.use('/users', users);
+app.use('/emojis', emojis);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);

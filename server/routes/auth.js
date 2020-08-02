@@ -50,7 +50,7 @@ router.post('/signup', (req, res, next) => {
             }
             console.log(user);
             if (user.userType !== 'admin') {
-                res.status(401);
+                res.status(403);
                 next(new Error('You must be an admin to create an admin account.'));
             }
         })(req, res, next);
@@ -75,7 +75,7 @@ function loginAuthorizationError(res, next) {
 }
 
 function mustBeAdminError(res, next) {
-    res.status(401);
+    res.status(403);
     next(new Error('You must be an admin to access this endpoint.'));
 }
 

@@ -42,3 +42,5 @@ const emojiEntrySchema = new Schema({
         minLength: 10,
     },
 });
+
+module.exports = mongoose.model('EmojiEntry', emojiEntrySchema);
