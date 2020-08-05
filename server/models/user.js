@@ -18,7 +18,7 @@ const userSchema = new Schema({
         unique: true,
         validate: {
             validator: (name) => {
-                return /^[A-Za-z0-9_]+$/.test(name);
+                return /^[A-Za-z0-9_-]+$/.test(name);
             },
             message: (props) => `${props.value} is not a valid username!`
         },

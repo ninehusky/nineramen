@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --runInBand ./tests",
     "dev": "nodemon index.js"
   },
   "author": "",
@@ -21,7 +21,12 @@
     "passport-local": "^1.0.0"
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.2.1",
+    "jest": "^26.2.2",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.4"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }
