@@ -8,6 +8,15 @@ const opts = {
     useUnifiedTopology: true,
 };
 
+const password = 'arfarfbarkbark';
+const validUserData = {
+    username: 'koto-the-dog',
+    password: password,
+};
+
+module.exports.password = password;
+module.exports.validUserData = validUserData;
+
 module.exports.setupDatabase = async () => {
     mongoServer = new MongoMemoryServer();
     const mongoUri = await mongoServer.getUri();
@@ -32,3 +41,5 @@ module.exports.deleteDatabase = async () => {
     await mongoose.disconnect();
     await mongoServer.stop();
 };
+
+

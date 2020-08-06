@@ -1,10 +1,8 @@
 const dbHandler = require('../utils/mongo-test-utils');
 const User = require('../models/user');
 
-const validUserData = {
-    username: 'koto-the-dog',
-    password: 'arfarfbarkbark',
-};
+const password = dbHandler.password;
+const validUserData = dbHandler.validUserData;
 
 beforeAll(async () => await dbHandler.setupDatabase());
 
@@ -38,21 +36,27 @@ describe('Signup', () => {
 
     it('throws validation error if username is too long/short/has illegal characters', async () => {
         // too short
-        let invalidUserData = validUserData;
+        let invalidUserData = {
+            ...validUserData,
+        };
         invalidUserData.username = 'a';
         let invalidUser = new User(invalidUserData);
         const tooShortError = invalidUser.validateSync();
         expect(tooShortError.name).toEqual('ValidationError');
 
         // too long
-        invalidUserData = validUserData;
+        invalidUserData = {
+            ...validUserData,
+        };
         invalidUserData.username = 'a'.repeat(100);
         invalidUser = new User(invalidUserData);
         const tooLongError = invalidUser.validateSync();
         expect(tooLongError.name).toEqual('ValidationError');
 
         // illegalChars
-        invalidUserData = validUserData;
+        invalidUserData = {
+            ...validUserData,
+        };
         invalidUserData.username = '*'.repeat(10);
         invalidUser = new User(invalidUserData);
         const illegalCharError = invalidUser.validateSync();
@@ -70,13 +74,22 @@ describe('Signup', () => {
     });
 
     it('throws validation error if daily entries are beyond/above maximum of USER_DAILY_ENTRY_LIMIT', async () => {
-        let invalidUserData = validUserData;
+        let invalidUserData = {
+            ...validUserData,
+        };
         invalidUserData.remainingDailyEntries = Number.MAX_VALUE;
         checkValidationError(invalidUserData);
 
         invalidUserData.remainingDailyEntries = -1;
         checkValidationError(invalidUserData);
     });
+
+    // CORRECT ERROR IS THROWN, BUT JEST CAN'T CATCH IT FOR SOME REASON
+    // it('throws mongo error if username already taken', async () => {
+    //     console.log();
+    //     const validUser = await User.create(validUserData);
+    //     console.log(await User.create(validUserData));
+    // });
 });
 
 /**
