@@ -6,11 +6,10 @@ const validUserData = dbHandler.validUserData;
 
 beforeAll(async () => await dbHandler.setupDatabase());
 
-afterEach(async () => await dbHandler.cleanupDatabase());
-
 afterAll(async () => await dbHandler.deleteDatabase());
 
 describe('Signup', () => {
+    afterEach(async () => await dbHandler.cleanupDatabase());
     it('creates and saves valid user succesfully', async () => {
         const userDataWithoutPass = createInvalidUserData(validUserData, 'password');
         const insertedUser = await User.create(validUserData);

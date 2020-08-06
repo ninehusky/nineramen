@@ -60,7 +60,7 @@ userSchema.post('save', (err, doc, next) => {
 userSchema.methods.resetEntryLimit = function() {
     const user = this;
     user.remainingDailyEntries = USER_DAILY_ENTRY_LIMIT;
-}
+};
 
 // userSchema.methods.verifyPassword = function(password) {
 //     if (passwordUtils.comparePassword(password)) {

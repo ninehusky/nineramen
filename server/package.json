@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand ./tests",
-    "dev": "nodemon index.js"
+    "test": "jest --runInBand ./tests --forceExit",
+    "dev": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
@@ -24,7 +24,8 @@
     "@shelf/jest-mongodb": "^1.2.1",
     "jest": "^26.2.2",
     "morgan": "^1.10.0",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "supertest": "^4.0.2"
   },
   "jest": {
     "testEnvironment": "node"
