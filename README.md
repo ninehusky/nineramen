@@ -15,7 +15,7 @@ To further highlight the ridiculousness of those who are being mocked with a cop
 
 If you look at the emojipasta in the section above, you'll find that words of interest map to certain emojis. These word-emoji connections can be quite literal ("walked" maps to 🚶), but they can also be "abstract" as well (i.e., the 'average' person wouldn't be able to understand the connection). One example of this is the 🥒 emoji mapping to the word "Rick" - this is alluding to the infamous "Pickle Rick" meme from the popular show, Rick and Morty.
 
-These word-emoji connections will be precisely what the nineramen app will rely on - ideally, in the future there will be a global database of word-emoji connections that can be added to be any user with an account in the nineramen system.
+These word-emoji connections will be precisely what the nineramen app will rely on - ideally, in the future there will be a global database of word-emoji connections that can be added from any user with an account in the nineramen system.
 
 ## What about mean people?
 
