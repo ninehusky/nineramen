@@ -12,7 +12,6 @@ function errorHandler(err, req, res, next) {
   } else if (err.name === 'ValidationError') {
     res.status(422);
   }
-  console.error(err);
   res.status(res.statusCode || 500);
   res.json({
     message: err.message,

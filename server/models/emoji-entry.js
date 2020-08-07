@@ -24,7 +24,9 @@ const emojiEntrySchema = new Schema({
             },
         }
     },
-    createdBy: mongoose.Types.ObjectId,
+    createdBy: {
+        ...requiredString,
+    },
     dateCreated: {
         type: Date,
         default: Date.now
