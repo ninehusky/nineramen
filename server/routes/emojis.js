@@ -17,14 +17,20 @@ router.get('/', (req, res, next) => {
 
 // Make a new emojientry
 router.post('/', passport.authenticate('jwt'), async (req, res, next) => {
-    // search for duplicates
-    const duplicateEntries = await User.find({
-        word: req.body.word,
-        emoji: req.body.emoji,
-    });
-    if (duplicateEntries) {
-        res.status(422);
-        return next(new Error(`An entry mapping ${req.body.word} to ${req.body.emoji} already exists!`));
+    try {
+        
+        // duplicateEntries is the array containing all EmojiEntries that match the word/emoji pair
+        const duplicateEntries = await EmojiEntry.find({
+            word: req.body.word,
+            emoji: req.body.emoji,
+        });
+        console.log(duplicateEntries);
+        if (duplicateEntries.length) {
+            res.status(422);
+            return next(new Error(`An entry mapping ${req.body.word} to ${req.body.emoji} already exists!`));
+        }
+    } catch (error) {
+        return next(error);
     }
     if (req.user.userType !== 'admin') {
         try {
@@ -52,6 +58,9 @@ router.post('/', passport.authenticate('jwt'), async (req, res, next) => {
         .catch((error) => {
             next(error);
         });
+});
+
+router.get('/report/:id', passport.authenticate('jwt'), (req, res, next) => {
 });
 
 module.exports = router;
