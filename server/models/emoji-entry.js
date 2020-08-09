@@ -60,4 +60,10 @@ const emojiEntrySchema = new Schema({
     },
 });
 
+emojiEntrySchema.methods.sanitize = function() {
+    let emojiEntry = this.toObject();
+    delete emojiEntry.reports;
+    return emojiEntry;
+}
+
 module.exports = mongoose.model('EmojiEntry', emojiEntrySchema);

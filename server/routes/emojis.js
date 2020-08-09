@@ -1,17 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const jwt = require('jsonwebtoken');
 
 const EmojiEntry = require('../models/emoji-entry');
 const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
+    console.log(req.user);
     EmojiEntry.find({}, (err, entries) => {
         if (err) {
             next(err);
         }
-        res.json(entries);
+        sanitizedEntries = [];
+        entries.forEach((entry) => {
+            sanitizedEntries.push(entry.sanitize());
+        });
+        res.json(sanitizedEntries);
     });
 });
 
@@ -64,7 +68,7 @@ router.post('/', passport.authenticate('jwt'), async (req, res, next) => {
 
 router.get('/report/:id', passport.authenticate('jwt'), async (req, res, next) => {
     try {
-        let emojiEntry = await EmojiEntry.findById(req.params.id);
+        let emojiEntry = await findEmojiEntry(req.params.id);
         emojiEntry.reports.forEach((report) => {
             console.log(report.reportedBy, req.user.username);
             if (report.reportedBy === req.user.username) {
@@ -84,5 +88,29 @@ router.get('/report/:id', passport.authenticate('jwt'), async (req, res, next) =
         return next(error);
     }
 });
+
+router.delete('/:id', passport.authenticate('jwt'), async (req, res, next) => {
+    try {
+        const emojiEntry = await findEmojiEntry(req.params.id);
+        if (req.user.username !== emojiEntry.createdBy && req.user.userType !== 'admin') {
+            res.status(403);
+            return next(new Error('You must be an admin to delete emoji entries that are not your own.'));
+        }
+        await EmojiEntry.deleteOne({_id: req.params.id});
+        res.json({
+            message: 'Your emoji entry has been successfully deleted.',
+        });
+    } catch (error) {
+        return next(error);
+    }
+});
+
+async function findEmojiEntry(id) {
+    const emojiEntry = await EmojiEntry.findById(id);
+    if (!emojiEntry) {
+        throw new Error('There is no emoji entry with that ID.');
+    }
+    return emojiEntry;
+}
 
 module.exports = router;
