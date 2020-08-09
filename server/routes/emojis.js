@@ -18,13 +18,11 @@ router.get('/', (req, res, next) => {
 // Make a new emojientry
 router.post('/', passport.authenticate('jwt'), async (req, res, next) => {
     try {
-        
         // duplicateEntries is the array containing all EmojiEntries that match the word/emoji pair
         const duplicateEntries = await EmojiEntry.find({
             word: req.body.word,
             emoji: req.body.emoji,
         });
-        console.log(duplicateEntries);
         if (duplicateEntries.length) {
             res.status(422);
             return next(new Error(`An entry mapping ${req.body.word} to ${req.body.emoji} already exists!`));
@@ -35,6 +33,10 @@ router.post('/', passport.authenticate('jwt'), async (req, res, next) => {
     if (req.user.userType !== 'admin') {
         try {
             let user = await User.findById(req.user._id);
+            if (!user) {
+                res.status(500);
+                throw new Error('There was an error adding the entry.');
+            }
             if (user.remainingDailyEntries > 0) {
                 user.remainingDailyEntries--;
                 await user.save();
@@ -60,7 +62,27 @@ router.post('/', passport.authenticate('jwt'), async (req, res, next) => {
         });
 });
 
-router.get('/report/:id', passport.authenticate('jwt'), (req, res, next) => {
+router.get('/report/:id', passport.authenticate('jwt'), async (req, res, next) => {
+    try {
+        let emojiEntry = await EmojiEntry.findById(req.params.id);
+        emojiEntry.reports.forEach((report) => {
+            console.log(report.reportedBy, req.user.username);
+            if (report.reportedBy === req.user.username) {
+                res.status(400);
+                throw new Error('You have already reported this entry.');
+            }
+        });
+        emojiEntry.reports.push({
+            reportedBy: req.user.username,
+            description: req.body.description,
+        });
+        await emojiEntry.save();
+        res.json({
+            message: 'Thank you for your report. An admin will review this shortly.',
+        });
+    } catch (error) {
+        return next(error);
+    }
 });
 
 module.exports = router;
