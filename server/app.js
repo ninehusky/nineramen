@@ -7,6 +7,8 @@ const passport = require('passport');
 
 const users = require('./users');
 
+require('./config/database');
+
 const app = express();
 app.use(express.json());
 

@@ -3,7 +3,7 @@ const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcryptjs');
 const config = require('config');
 
-const { Schema } = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 const requiredString = {
   type: String,
@@ -18,6 +18,7 @@ const userSchema = new Schema({
     unique: true,
     validate: {
       validator: (name) => /^[A-Za-z0-9_-]+$/.test(name),
+      message: (props) => 'That is not a valid username.',
     },
   },
   password: {
@@ -41,3 +42,5 @@ userSchema.pre('save', function(next) {
   }
   next();
 });
+
+module.exports = mongoose.model('User', userSchema);
