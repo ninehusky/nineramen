@@ -48,13 +48,13 @@ function throwAdminError(message) {
   throw error;
 }
 
-function adminCheck(user, idOfUserToChange) {
+async function adminCheck(user, idOfUserToChange) {
   const sameId = (new ObjectId(user._id).equals(new ObjectId(idOfUserToChange)));
   if (!sameId) {
     if (user.userType !== 'admin') {
       throwAdminError('You must be an admin to change another user\'s account.');
     } else {
-      const userToChange = API.getUser({ _id: new ObjectId(idOfUserToChange) });
+      const userToChange = await API.getUser({ _id: new ObjectId(idOfUserToChange) });
       if (userToChange.userType === 'admin') {
         throwAdminError('You cannot change the account of another admin.');
       }
@@ -138,7 +138,7 @@ router.patch('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
     validateId(req.params.id);
     validateChanges(req.body);
-    adminCheck(req.user, req.params.id);
+    await adminCheck(req.user, req.params.id);
     if (req.body.userType === 'admin' && req.user.userType !== 'admin') {
       throwAdminError('You cannot promote an account if you are not an admin.');
     }
@@ -156,7 +156,7 @@ router.delete('/', sendRequireIDError);
 router.delete('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
     validateId(req.params.id);
-    adminCheck(req.user, req.params.id);
+    await adminCheck(req.user, req.params.id);
     await API.deleteUser(new ObjectId(req.params.id));
     res.json({
       message: 'User deleted succesfully.',

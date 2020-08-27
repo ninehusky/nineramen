@@ -32,4 +32,7 @@ Tests I've performed in Postman but should implement again sometime soon:
 - DELETE /user/ (i.e., no ID) gives 405
 - DELETE /user/:id with invalid ID gives 400
 - DELETE /users/:id with ID that doesn't exist gives 404
-- DELETE users/:id with valid ID succesfully deletes user
+- DELETE /users/:id with valid user ID successfully deletes self
+- DELETE /users/:id with other user ID gives 403
+- DELETE /users/:id with admin's ID gives 403
+- DELETE /users/:id throws 403 when deleting another user/admin
