@@ -1,10 +1,14 @@
 const express = require('express');
+const passport = require('passport');
 const { ObjectId } = require('mongoose').Types.ObjectId;
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 const router = express.Router();
 
 const API = require('./API');
 const errorHandler = require('./errors');
+require('../config/passport');
 
 function sendRequireIDError(req, res, next) {
   res.status(405);
@@ -18,7 +22,7 @@ function validateChanges(changes) {
     error.statusCode = 400;
     throw error;
   }
-  const validChanges = ['name', 'password'];
+  const validChanges = ['name', 'password', 'userType'];
   const attemptedChanges = Object.keys(changes);
   for (let i = 0; i < attemptedChanges.length; i += 1) {
     const change = attemptedChanges[i];
@@ -38,6 +42,56 @@ function validateId(id) {
   }
 }
 
+function throwAdminError(message) {
+  const error = new Error(message);
+  error.statusCode = 403;
+  throw error;
+}
+
+function adminCheck(user, idOfUserToChange) {
+  const sameId = (new ObjectId(user._id).equals(new ObjectId(idOfUserToChange)));
+  if (!sameId) {
+    if (user.userType !== 'admin') {
+      throwAdminError('You must be an admin to change another user\'s account.');
+    } else {
+      const userToChange = API.getUser({ _id: new ObjectId(idOfUserToChange) });
+      if (userToChange.userType === 'admin') {
+        throwAdminError('You cannot change the account of another admin.');
+      }
+    }
+  }
+}
+
+router.use(passport.initialize());
+router.use(passport.session());
+
+router.get('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      if (info.message === 'Missing credentials') {
+        info.message = 'You must include a name and password in the request body.';
+        res.status(400);
+      } else {
+        res.status(401);
+      }
+      const error = new Error(info.message);
+      return next(error);
+    }
+    const payload = {
+      id: user._id,
+      name: user.name,
+      userType: user.userType,
+    };
+    const token = jwt.sign(payload, config.get('jwtSecret'), {
+      expiresIn: '1d',
+    });
+    res.json({ token });
+  })(req, res, next);
+});
+
 router.get('/', async (req, res, next) => {
   try {
     const users = await API.getAllUsers();
@@ -49,7 +103,8 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   try {
-    const user = await API.getUser({ _id: req.params.id });
+    validateId(req.params.id);
+    const user = await API.getUser({ _id: new ObjectId(req.params.id) });
     res.json(user);
   } catch (error) {
     next(error);
@@ -64,6 +119,11 @@ router.post('/', async (req, res, next) => {
       password: req.body.password,
       userType: req.body.userType || undefined,
     };
+    if (userData.userType === 'admin') {
+      const error = new Error('You cannot create an admin account, you can only promote an existing one.');
+      res.status(403);
+      throw error;
+    }
     const addedUser = await API.addUser(userData);
     res.status(201);
     res.json(addedUser);
@@ -74,11 +134,15 @@ router.post('/', async (req, res, next) => {
 
 router.patch('/', sendRequireIDError);
 
-router.patch('/:id', async (req, res, next) => {
+router.patch('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
     validateId(req.params.id);
     validateChanges(req.body);
-    await API.updateUser(req.params.id, req.body);
+    adminCheck(req.user, req.params.id);
+    if (req.body.userType === 'admin' && req.user.userType !== 'admin') {
+      throwAdminError('You cannot promote an account if you are not an admin.');
+    }
+    await API.updateUser(new ObjectId(req.params.id), req.body);
     res.json({
       message: 'User succesfully updated.',
     });
@@ -89,10 +153,11 @@ router.patch('/:id', async (req, res, next) => {
 
 router.delete('/', sendRequireIDError);
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
     validateId(req.params.id);
-    await API.deleteUser(req.params.id);
+    adminCheck(req.user, req.params.id);
+    await API.deleteUser(new ObjectId(req.params.id));
     res.json({
       message: 'User deleted succesfully.',
     });

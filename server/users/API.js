@@ -24,6 +24,11 @@ async function getUser(userData) {
   return user;
 }
 
+async function getFullUser(userData) {
+  const user = await User.findOne(userData).select('+password');
+  return user;
+}
+
 async function getAllUsers() {
   const users = await User.find({});
   return users;
@@ -49,6 +54,7 @@ async function deleteUser(id) {
 module.exports = {
   addUser,
   getUser,
+  getFullUser,
   getAllUsers,
   updateUser,
   deleteUser,

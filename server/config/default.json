@@ -3,5 +3,6 @@
     "saltWorkValue": 10,
     "databaseUrl": "mongodb://localhost:27017/emojiramen"
   },
-  "nodeEnv": "PRODUCTION"
+  "nodeEnv": "PRODUCTION",
+  "jwtSecret": "keyboard cat"
 }

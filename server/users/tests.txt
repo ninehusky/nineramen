@@ -10,6 +10,7 @@ Tests I've performed in Postman but should implement again sometime soon:
   - POST /users/ with short password sends 422
 - POST /users/ with name that's already taken throws 422
 - POST /users/ with invalid changes throws 400 error
+- POST /users/ with userType of admin throws 403
 - POST /users/ with correct username/password successfully creates user
 
 - PATCH /users/ (i.e., no ID) gives 405
@@ -19,6 +20,14 @@ Tests I've performed in Postman but should implement again sometime soon:
 - PATCH /users/:id with invalid properties gives 400
 - PATCH /users/:id with invalid values gives 422
 - PATCH /users/:id with valid properties succesfuly changes user
+- PATCH /users/ when not logged in throws 401
+- PATCH /users/:id when logged in as user:
+  - PATCH /users/:id for self is successful
+  - PATCH /users/:id for other user throws 403
+  - PATCH /users/:id for promotion throws 403
+- PATCH /users/:id when logged in as admin:
+  - PATCH /users/:id for other user is successful
+  - PATCH /users/:id for other admin throws 403
 
 - DELETE /user/ (i.e., no ID) gives 405
 - DELETE /user/:id with invalid ID gives 400

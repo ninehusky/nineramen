@@ -22,7 +22,7 @@ function handleError(err, req, res, next) {
     error: {
       message: err.message,
     },
-    stack: config.get('nodeEnv') === 'production' ? err.stack : 'hehe',
+    stack: err.stack,
   });
   return next(); // this could be a very problematic statement
 }
