@@ -1,5 +1,3 @@
-const config = require('config');
-
 function notFound(req, res, next) {
   res.status(404);
   const error = new Error(`Not Found - ${req.originalUrl}`);
@@ -7,11 +5,7 @@ function notFound(req, res, next) {
 }
 
 function handleError(err, req, res, next) {
-  console.log(err);
   if (err.name === 'ValidationError') {
-    res.status(422);
-  } else if (err.code === 11000) {
-    err.message = 'That username is already taken.';
     res.status(422);
   }
   if (res.statusCode >= 400 && res.statusCode <= 500) {

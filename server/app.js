@@ -6,6 +6,7 @@ const cors = require('cors');
 const passport = require('passport');
 
 const users = require('./users');
+const entries = require('./entries');
 
 require('./config/database');
 
@@ -24,5 +25,6 @@ app.use(cors({
 }));
 
 app.use('/users', users);
+app.use('/entries', entries);
 
 module.exports = app;

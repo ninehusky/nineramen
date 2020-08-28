@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const User = require('./user');
 
 async function checkUserWithId(id) {
@@ -49,12 +48,6 @@ async function deleteUser(id) {
   await checkUserWithId(id);
   const deletedUser = await User.deleteOne({ _id: id });
   return deletedUser;
-}
-
-async function report(id, reportData) {
-  const user = await User.findById(id);
-
-  user.
 }
 
 module.exports = {
