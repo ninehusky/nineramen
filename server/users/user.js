@@ -5,6 +5,8 @@ const config = require('config');
 
 const Schema = mongoose.Schema;
 
+const report = require('../reports/report');
+
 const requiredString = {
   type: String,
   required: true,
@@ -31,6 +33,7 @@ const userSchema = new Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
+  reports: [report],
 });
 
 userSchema.plugin(uniqueValidator);
