@@ -6,65 +6,71 @@ const { ObjectId } = require('mongoose').Types.ObjectId;
 
 const router = express.Router();
 
-const API = require('./API');
-const errorHandler = require('./errors');
-
-function validateChanges(changes) {
-  const validChanges = ['word', 'emoji', 'absurdity', 'description'];
-  const attemptedChanges = Object.keys(changes);
-  for (let i = 0; i < attemptedChanges.length; i += 1) {
-    const change = attemptedChanges[i];
-    if (!validChanges.includes(change)) {
-      const error = new Error(`The property ${change} is not a valid property to change.`);
-      error.statusCode = 400;
-      throw error;
-    }
-  }
-}
-
-async function checkValidID(id) {
-  if (!mongoose.isValidObjectId(id)) {
-    return false;
-  }
-  const entry = await API.getEntry({ _id: new ObjectId(id) });
-  if (!entry) {
-    const error = new Error('An entry with that ID does not exist!');
-    error.statusCode = 404;
-    throw error;
-  }
-}
+const api = require('./API');
+const errorHandler = require('error-utils');
 
 router.use(passport.initialize());
 router.use(passport.session());
 
 router.get('/', async (req, res, next) => {
   try {
-    const entries = await API.getAllEntries();
-    res.json(entries);
+    const entries = api.getAll();
+    const sanitizedEntries = [];
+    entries.forEach((entry) => {
+      sanitizedEntries.push(api.sanitizeData(entry));
+    });
+    res.json(sanitizedEntries);
   } catch (error) {
-    return next(error);
+    next(error);
+  }
+});
+
+router.get('/:id', async (req, res, next) => {
+  try {
+    let entry = await api.getOne(req.params.id);
+    entry = api.sanitizeData(entry);
+    res.json(entry);
+  } catch (error) {
+    next(error);
   }
 });
 
 router.post('/', passport.authenticate('jwt'), async (req, res, next) => {
   try {
-    validateChanges(req.body);
-    const entryData = {
-      ...req.body,
-      createdBy: new ObjectId(req.user._id),
-    };
-    const addedEntry = await API.addEntry(entryData);
+    const entryData = req.body;
+    entryData.createdBy = req.user._id;
+    await api.create(entryData);
     res.status(201);
-    addedEntry.reports = undefined;
-    res.json(addedEntry);
+    res.json({
+      message: 'Entry succesfully created.',
+    });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 });
 
-router.post('/:id/report', passport.authenticate('jwt'), async (req, res, next) => {
+router.post('/:id/report/', passport.authenticate('jwt'), async (req, res, next) => {
   try {
-    checkValidID(req.params.id);
+    const reportData = {
+      createdBy: req.user._id,
+      description: req.body.description,
+    };
+    await api.report(req.params.id, reportData);
+    res.json({
+      message: 'Your report has been submitted. Thank you.',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/:id', passport.authenticate('jwt'), async (req, res, next) => {
+  try {
+    await api.checkValidChange(req.user._id, entry.createdBy);
+    await api.delete(req.params.id);
+    res.json({
+      message: 'Entry succesfully deleted.',
+    });
   } catch (error) {
     next(error);
   }

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 
 const requiredString = {
@@ -7,7 +8,7 @@ const requiredString = {
 };
 
 const reportSchema = new Schema({
-  reportedBy: {
+  createdBy: {
     required: true,
     type: Schema.Types.ObjectId,
   },

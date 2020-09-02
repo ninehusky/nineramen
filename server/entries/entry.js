@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const report = require('../reports/report');
+const report = require('api-wrapper/report');
 
 const requiredString = {
   type: String,
@@ -42,7 +42,6 @@ const entrySchema = new Schema({
   },
   reports: {
     type: [report],
-    select: false,
   },
   description: {
     ...requiredString,
@@ -50,4 +49,5 @@ const entrySchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('Entry', entrySchema);
+module.exports.entrySchema = entrySchema;
+module.exports.Entry = mongoose.model('Entry', entrySchema);

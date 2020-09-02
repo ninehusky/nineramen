@@ -2,10 +2,9 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcryptjs');
 const config = require('config');
+const report = require('api-wrapper').Report;
 
-const Schema = mongoose.Schema;
-
-const report = require('../reports/report');
+const { Schema } = mongoose;
 
 const requiredString = {
   type: String,
@@ -38,6 +37,10 @@ const userSchema = new Schema({
 
 userSchema.plugin(uniqueValidator);
 
+userSchema.methods.verifyPassword = function(password) {
+  return bcrypt.compareSync(password, this.password);
+};
+
 userSchema.pre('save', function(next) {
   const user = this;
   if (user.isModified('password')) {
@@ -46,4 +49,4 @@ userSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports.userSchema = userSchema;

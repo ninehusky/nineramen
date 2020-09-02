@@ -4,7 +4,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const bcrypt = require('bcryptjs');
 const config = require('config');
 
-const API = require('../users/API');
+const api = require('../users/API');
 const { ExtractJwt } = require('passport-jwt');
 
 const localOpts = {
@@ -27,7 +27,15 @@ const jwtErrorMessage = {
 
 passport.use(new LocalStrategy(localOpts, async (username, password, done) => {
   try {
-    const user = await API.getFullUser({ name: username });
+    const users = await api.getAll();
+    let user = null;
+    for (let i = 0; i < users.length; i += 1) {
+      const currentUser = users[i];
+      if (currentUser.name === username) {
+        user = currentUser;
+        break; // oof
+      }
+    }
     if (!user) {
       return done(null, false, loginErrorMessage);
     }
@@ -44,7 +52,7 @@ passport.use(new LocalStrategy(localOpts, async (username, password, done) => {
 
 passport.use(new JwtStrategy(jwtOpts, async (jwtPayload, done) => {
   try {
-    const user = await API.getUser({ _id: jwtPayload.id });
+    const user = await api.getOne(jwtPayload.id);
     if (!user) {
       return done(null, false, jwtErrorMessage);
     }

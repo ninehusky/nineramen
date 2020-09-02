@@ -1,66 +1,14 @@
 const express = require('express');
 const passport = require('passport');
-const { ObjectId } = require('mongoose').Types.ObjectId;
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const errorHandler = require('error-utils');
 
-const router = express.Router();
+const api = require('./API');
 
-const API = require('./API');
-const errorHandler = require('./errors');
 require('../config/passport');
 
-function sendRequireIDError(req, res, next) {
-  res.status(405);
-  const error = new Error('You must include an ID in the URL to perform this operation.');
-  return next(error);
-}
-
-function validateChanges(changes) {
-  if (Object.keys(changes).length === 0) {
-    const error = new Error('The request body cannot be empty.');
-    error.statusCode = 400;
-    throw error;
-  }
-  const validChanges = ['name', 'password', 'userType'];
-  const attemptedChanges = Object.keys(changes);
-  for (let i = 0; i < attemptedChanges.length; i += 1) {
-    const change = attemptedChanges[i];
-    if (!validChanges.includes(change)) {
-      const error = new Error(`The property ${change} is not a valid property to change.`);
-      error.statusCode = 400;
-      throw error;
-    }
-  }
-}
-
-function validateId(id) {
-  if (!ObjectId.isValid(id)) {
-    const error = new Error(`The id ${id} is not valid.`);
-    error.statusCode = 400;
-    throw error;
-  }
-}
-
-function throwAdminError(message) {
-  const error = new Error(message);
-  error.statusCode = 403;
-  throw error;
-}
-
-async function adminCheck(user, idOfUserToChange) {
-  const sameId = (new ObjectId(user._id).equals(new ObjectId(idOfUserToChange)));
-  if (!sameId) {
-    if (user.userType !== 'admin') {
-      throwAdminError('You must be an admin to change another user\'s account.');
-    } else {
-      const userToChange = await API.getUser({ _id: new ObjectId(idOfUserToChange) });
-      if (userToChange.userType === 'admin') {
-        throwAdminError('You cannot change the account of another admin.');
-      }
-    }
-  }
-}
+const router = express.Router();
 
 router.use(passport.initialize());
 router.use(passport.session());
@@ -94,17 +42,21 @@ router.get('/login', (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    const users = await API.getAllUsers();
-    res.json(users);
+    const users = await api.getAll();
+    const sanitizedUsers = [];
+    users.forEach((user) => {
+      sanitizedUsers.push(api.sanitizeData(user));
+    });
+    res.json(sanitizedUsers);
   } catch (error) {
-    return next(error);
+    next(error);
   }
 });
 
 router.get('/:id', async (req, res, next) => {
   try {
-    validateId(req.params.id);
-    const user = await API.getUser({ _id: new ObjectId(req.params.id) });
+    let user = await api.getOne(req.params.id);
+    user = api.sanitizeData(user);
     res.json(user);
   } catch (error) {
     next(error);
@@ -113,36 +65,54 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    validateChanges(req.body);
     const userData = {
       name: req.body.name,
       password: req.body.password,
-      userType: req.body.userType || undefined,
-    };
-    if (userData.userType === 'admin') {
-      const error = new Error('You cannot create an admin account, you can only promote an existing one.');
-      res.status(403);
-      throw error;
-    }
-    const addedUser = await API.addUser(userData);
+    }; // maybe sanitize further
+    await api.create(userData);
     res.status(201);
-    res.json(addedUser);
+    res.json({
+      message: 'User succesfully created.',
+    });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 });
 
-router.patch('/', sendRequireIDError);
+router.post('/:id/report/', passport.authenticate('jwt'), async (req, res, next) => {
+  try {
+    const reportData = {
+      createdBy: req.user._id,
+      description: req.body.description,
+    };
+    await api.report(req.params.id, reportData);
+    res.json({
+      message: 'Your report has been received. Thank you.',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch('/', api.requiredIdError);
 
 router.patch('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
-    validateId(req.params.id);
-    validateChanges(req.body);
-    await adminCheck(req.user, req.params.id);
-    if (req.body.userType === 'admin' && req.user.userType !== 'admin') {
-      throwAdminError('You cannot promote an account if you are not an admin.');
+    await api.checkValidChange(req.user._id, req.params.id);
+    console.log(req.body.userType);
+    if (req.body.userType === 'admin' && req.user.userType === 'user') {
+      const error = new Error('You are not authorized to promote a user.');
+      error.statusCode = 403;
+      throw error;
     }
-    await API.updateUser(new ObjectId(req.params.id), req.body);
+    console.log('password is', req.body.password);
+    if (req.body.password && (String)(req.user._id) !== (String)(req.params.id)) {
+      const error = new Error('You cannot change the password of another user.');
+      error.statusCode = 403;
+      throw error;
+    }
+    const updateData = req.body;
+    await api.updateOne(req.params.id, updateData);
     res.json({
       message: 'User succesfully updated.',
     });
@@ -151,15 +121,14 @@ router.patch('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   }
 });
 
-router.delete('/', sendRequireIDError);
+// router.delete('/', sendRequireIDError);
 
 router.delete('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
-    validateId(req.params.id);
-    await adminCheck(req.user, req.params.id);
-    await API.deleteUser(new ObjectId(req.params.id));
+    await api.checkValidChange(req.user._id, req.params.id);
+    await api.delete(req.params.id);
     res.json({
-      message: 'User deleted succesfully.',
+      message: 'User succesfully deleted.',
     });
   } catch (error) {
     next(error);
