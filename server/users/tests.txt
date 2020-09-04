@@ -1,0 +1,38 @@
+Tests I've performed in Postman but should implement again sometime soon:
+
+- GET /users/ correctly sends list of users
+- GET /users/:id correctly gives user
+
+- POST /users/ with empty body correctly sends 422 response
+  - POST /users/ with missing password sends 422
+  - POST /users/ with missing username sends 422
+  - POST /users/ with short/long/invalid username sends 422
+  - POST /users/ with short password sends 422
+- POST /users/ with name that's already taken throws 422
+- POST /users/ with invalid changes throws 400 error
+- POST /users/ with userType of admin throws 403
+- POST /users/ with correct username/password successfully creates user
+
+- PATCH /users/ (i.e., no ID) gives 400
+- PATCH /users/:id with empty body gives 400
+- PATCH /users/:id with invalid ID gives 400
+- PATCH /users/:id with ID that doesn't exist gives 404
+- PATCH /users/:id with invalid properties gives 400
+- PATCH /users/:id with invalid values gives 422
+- PATCH /users/:id with valid properties succesfuly changes user
+- PATCH /users/ when not logged in throws 401
+- PATCH /users/:id when logged in as user:
+  - PATCH /users/:id for self is successful
+  - PATCH /users/:id for other user throws 403
+  - PATCH /users/:id for promotion throws 403
+- PATCH /users/:id when logged in as admin:
+  - PATCH /users/:id for other user is successful
+  - PATCH /users/:id for other admin throws 403
+
+- DELETE /user/ (i.e., no ID) gives 405
+- DELETE /user/:id with invalid ID gives 400
+- DELETE /users/:id with ID that doesn't exist gives 404
+- DELETE /users/:id with valid user ID successfully deletes self
+- DELETE /users/:id with other user ID gives 403
+- DELETE /users/:id with admin's ID gives 403
+- DELETE /users/:id throws 403 when deleting another user/admin

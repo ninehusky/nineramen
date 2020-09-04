@@ -1,60 +1,70 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
 const bcrypt = require('bcryptjs');
+const config = require('config');
 
-const passwordUtils = require('../utils/password-utils');
-const User = require('../models/user');
+const { api } = require('../users/API');
+const { ExtractJwt } = require('passport-jwt');
 
-
-passport.use(new LocalStrategy((username, password, done) => {
-    User.findOne({
-        username: username,
-    }).then((user) => {
-        if (!user) {
-            return done(null, false, { message: 'The username and/or password given is invalid.' });
-        }
-        bcrypt.compare(password, user.password)
-            .then((result) => {
-                if (result) {
-                    // passwords match
-                    return done(null, user);
-                }
-                return done(null, false, { message: 'The username and/or password given is invalid.' });
-            })
-            .catch((error) => {
-                return done(error);
-            });
-    })
-        .catch((error) => {
-            return done(error);
-        });
-}));
-
-const options = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET,
+const localOpts = {
+  usernameField: 'name',
+  passwordField: 'password',
 };
 
-passport.use(new JwtStrategy(options, (jwt_payload, done) => {
-    User.findById(jwt_payload._id, (err, user) => {
-        if (err) {
-            done(err);
-        }
-        if (!user) {
-            done(null, false);
-        }
-        done(null, user);
-    });
+const jwtOpts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: config.get('jwtSecret'),
+};
+
+const loginErrorMessage = {
+  message: 'The username and/or password given is invalid.',
+};
+
+const jwtErrorMessage = {
+  message: 'You must be logged in to perform this. Please obtain a JWT and try again.',
+};
+
+passport.use(new LocalStrategy(localOpts, async (username, password, done) => {
+  try {
+    const user = await api.getOne({ name: username });
+    if (!user) {
+      return done(null, false, loginErrorMessage);
+    }
+    const result = await api.verifyPassword(user._id, password);
+    console.log(result);
+    const authConfirm = await api.verifyPassword(user._id, password);
+    if (!authConfirm) {
+      return done(null, false, loginErrorMessage);
+    }
+    user.password = undefined;
+    return done(null, user);
+  } catch (error) {
+    return done(error);
+  }
+}));
+
+passport.use(new JwtStrategy(jwtOpts, async (jwtPayload, done) => {
+  try {
+    const user = await api.getById(jwtPayload.id);
+    if (!user) {
+      return done(null, false, jwtErrorMessage);
+    }
+    return done(null, user);
+  } catch (error) {
+    return done(error);
+  }
 }));
 
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+  done(null, user._id);
 });
 
-passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await API.getUser({ _id: id });
+    done(null, user);
+  } catch (error) {
+    done(error);
+  }
 });

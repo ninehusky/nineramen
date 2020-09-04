@@ -1,6 +1,8 @@
-const app = require('./index');
+const http = require('http');
+
+const app = require('./app');
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-  console.log(`Listening on http://localhost:${port}`);
-});
+app.set('port', port);
+
+http.createServer(app).listen(port);

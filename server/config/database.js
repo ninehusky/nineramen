@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+const config = require('config');
 
-mongoose.connect(process.env.DATABASE_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+mongoose.connect(config.get('user.databaseUrl'), {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
