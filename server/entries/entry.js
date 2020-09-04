@@ -42,6 +42,7 @@ const entrySchema = new Schema({
   },
   reports: {
     type: [report],
+    select: false,
   },
   description: {
     ...requiredString,

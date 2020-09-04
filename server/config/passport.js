@@ -4,7 +4,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const bcrypt = require('bcryptjs');
 const config = require('config');
 
-const api = require('../users/API');
+const { api } = require('../users/API');
 const { ExtractJwt } = require('passport-jwt');
 
 const localOpts = {
@@ -27,19 +27,13 @@ const jwtErrorMessage = {
 
 passport.use(new LocalStrategy(localOpts, async (username, password, done) => {
   try {
-    const users = await api.getAll();
-    let user = null;
-    for (let i = 0; i < users.length; i += 1) {
-      const currentUser = users[i];
-      if (currentUser.name === username) {
-        user = currentUser;
-        break; // oof
-      }
-    }
+    const user = await api.getOne({ name: username });
     if (!user) {
       return done(null, false, loginErrorMessage);
     }
-    const authConfirm = bcrypt.compareSync(password, user.password);
+    const result = await api.verifyPassword(user._id, password);
+    console.log(result);
+    const authConfirm = await api.verifyPassword(user._id, password);
     if (!authConfirm) {
       return done(null, false, loginErrorMessage);
     }
@@ -52,7 +46,7 @@ passport.use(new LocalStrategy(localOpts, async (username, password, done) => {
 
 passport.use(new JwtStrategy(jwtOpts, async (jwtPayload, done) => {
   try {
-    const user = await api.getOne(jwtPayload.id);
+    const user = await api.getById(jwtPayload.id);
     if (!user) {
       return done(null, false, jwtErrorMessage);
     }

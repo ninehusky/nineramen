@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const errorHandler = require('error-utils');
 
-const api = require('./API');
+const { api } = require('./API');
+const { checkAuthorized } = require('./API');
 
 require('../config/passport');
 
@@ -43,11 +44,7 @@ router.get('/login', (req, res, next) => {
 router.get('/', async (req, res, next) => {
   try {
     const users = await api.getAll();
-    const sanitizedUsers = [];
-    users.forEach((user) => {
-      sanitizedUsers.push(api.sanitizeData(user));
-    });
-    res.json(sanitizedUsers);
+    res.json(users);
   } catch (error) {
     next(error);
   }
@@ -55,9 +52,22 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   try {
-    let user = await api.getOne(req.params.id);
-    user = api.sanitizeData(user);
+    const user = await api.getById(req.params.id);
     res.json(user);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/:id/reports', passport.authenticate('jwt'), async (req, res, next) => {
+  try {
+    if (req.user.userType !== 'admin') {
+      const error = new Error('You are not authorized to see the reports of the given user.');
+      error.statusCode = 403;
+      throw error;
+    }
+    const reports = await api.getReports(req.params.id);
+    res.json(reports);
   } catch (error) {
     next(error);
   }
@@ -65,11 +75,12 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const userData = {
-      name: req.body.name,
-      password: req.body.password,
-    }; // maybe sanitize further
-    await api.create(userData);
+    if (req.body.userType === 'admin') {
+      const error = new Error('You cannot create an admin, you can only promote an existing one.');
+      error.statusCode = 403;
+      throw error;
+    }
+    await api.create(req.body);
     res.status(201);
     res.json({
       message: 'User succesfully created.',
@@ -79,7 +90,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.post('/:id/report/', passport.authenticate('jwt'), async (req, res, next) => {
+router.post('/:id/reports/', passport.authenticate('jwt'), async (req, res, next) => {
   try {
     const reportData = {
       createdBy: req.user._id,
@@ -94,25 +105,22 @@ router.post('/:id/report/', passport.authenticate('jwt'), async (req, res, next)
   }
 });
 
-router.patch('/', api.requiredIdError);
+// router.patch('/', api.requiredIdError);
 
 router.patch('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
-    await api.checkValidChange(req.user._id, req.params.id);
-    console.log(req.body.userType);
     if (req.body.userType === 'admin' && req.user.userType === 'user') {
       const error = new Error('You are not authorized to promote a user.');
       error.statusCode = 403;
       throw error;
     }
-    console.log('password is', req.body.password);
     if (req.body.password && (String)(req.user._id) !== (String)(req.params.id)) {
       const error = new Error('You cannot change the password of another user.');
       error.statusCode = 403;
       throw error;
     }
-    const updateData = req.body;
-    await api.updateOne(req.params.id, updateData);
+    await checkAuthorized(req.user._id, req.params.id);
+    await api.updateById(req.params.id, req.body);
     res.json({
       message: 'User succesfully updated.',
     });
@@ -125,8 +133,9 @@ router.patch('/:id', passport.authenticate('jwt'), async (req, res, next) => {
 
 router.delete('/:id', passport.authenticate('jwt'), async (req, res, next) => {
   try {
-    await api.checkValidChange(req.user._id, req.params.id);
-    await api.delete(req.params.id);
+    await api.getById(req.params.id);
+    await checkAuthorized(req.user._id, req.params.id);
+    await api.deleteById(req.params.id);
     res.json({
       message: 'User succesfully deleted.',
     });

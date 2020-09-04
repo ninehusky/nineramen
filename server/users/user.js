@@ -32,13 +32,19 @@ const userSchema = new Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
-  reports: [report],
+  reports: {
+    type: [report],
+    select: false,
+  },
 });
 
 userSchema.plugin(uniqueValidator);
 
-userSchema.methods.verifyPassword = function(password) {
-  return bcrypt.compareSync(password, this.password);
+userSchema.methods.verifyPassword = async function(password) {
+  const User = mongoose.model('User', userSchema);
+  const user = await User.findById(this._id).select('+password');
+  const result = bcrypt.compareSync(password, user.password);
+  return result;
 };
 
 userSchema.pre('save', function(next) {

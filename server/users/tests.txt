@@ -13,7 +13,7 @@ Tests I've performed in Postman but should implement again sometime soon:
 - POST /users/ with userType of admin throws 403
 - POST /users/ with correct username/password successfully creates user
 
-- PATCH /users/ (i.e., no ID) gives 405
+- PATCH /users/ (i.e., no ID) gives 400
 - PATCH /users/:id with empty body gives 400
 - PATCH /users/:id with invalid ID gives 400
 - PATCH /users/:id with ID that doesn't exist gives 404

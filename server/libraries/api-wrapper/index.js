@@ -32,7 +32,7 @@ class ApiWrapper {
   }
 
   async getOne(data) {
-    const document = await this.model.find(data);
+    const document = await this.model.findOne(data);
     return document;
   }
 
@@ -42,14 +42,14 @@ class ApiWrapper {
   }
 
   async create(data) {
-    this.validateChanges(data);
+    this.validateChanges(Object.keys(data));
     const document = new this.model(data);
     await document.validate();
     await document.save();
   }
 
   async updateById(id, data) {
-    this.validateChanges(data);
+    this.validateChanges(Object.keys(data));
     await this.getById(id);
     const document = await this.model.findById(id);
     await document.set(data);
@@ -72,12 +72,7 @@ class ApiWrapper {
   }
 
   async report(id, data) {
-    if (!this.allowedChanges.includes('reports')) {
-      const error = new Error('You cannot report this resource.');
-      error.statusCode = 400;
-      throw error;
-    }
-    const document = await this.getById(id);
+    const document = await this.getReports(id);
     const { reports } = document;
     reports.forEach((report) => {
       if ((String)(report.createdBy) === (String)(data.createdBy)) {
