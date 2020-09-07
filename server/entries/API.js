@@ -23,6 +23,7 @@ class EntryApiWrapper extends ApiWrapper {
 
   async updateById(id, data) {
     this.validateChanges(Object.keys(data));
+    data.dateUpdated = Date.now();
     await this.getById(id);
     const document = await this.model.findById(id);
     await document.set(data);

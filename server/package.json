@@ -12,9 +12,11 @@
   "dependencies": {
     "api-wrapper": "file:libraries/api-wrapper",
     "bcryptjs": "^2.4.3",
+    "bl": "^4.0.3",
     "config": "^3.3.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "emojis-list": "^3.0.0",
     "error-utils": "file:libraries/error-utils",
     "express": "^4.17.1",
     "helmet": "^3.23.3",
