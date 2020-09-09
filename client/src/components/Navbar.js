@@ -1,11 +1,8 @@
-import React from 'react';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import TextView from './TextView';
+import React, { Component } from 'react';
 
-function App() {
-  return (
-    <div className="app">
+export default class Navbar extends Component {
+  render() {
+    return (
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <a className="navbar-brand" href="#">nineramen!</a>
         <ul className="navbar-nav mr-auto">
@@ -24,10 +21,6 @@ function App() {
           <button type="button" className="btn btn-light">Login</button>
         </span>
       </nav>
-      <TextView />
-      <Footer />
-    </div>
-  );
+    );
+  }
 }
-
-export default App;

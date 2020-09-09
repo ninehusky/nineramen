@@ -4,5 +4,6 @@
     "databaseUrl": "mongodb://localhost:27017/emojiramen"
   },
   "nodeEnv": "PRODUCTION",
-  "jwtSecret": "keyboard cat"
+  "jwtSecret": "keyboard cat",
+  "clientUrl": "http://localhost:3000"
 }

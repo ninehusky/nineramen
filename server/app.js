@@ -4,6 +4,7 @@ const helmet = require('helmet');
 require('dotenv').config();
 const cors = require('cors');
 const passport = require('passport');
+const config = require('config');
 
 const users = require('./users');
 const entries = require('./entries');
@@ -21,7 +22,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: config.get('clientUrl'),
 }));
 
 app.use('/users', users);
