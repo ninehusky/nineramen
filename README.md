@@ -31,11 +31,11 @@ When the app is finished, I plan on detailing more about the exact technology th
 - ~~Build User Schemas~~
 - ~~Finish Login/Signup endpoints~~
 - ~~Build EmojiEntry Schemas~~
-- Lots of Refactoring
-- Testing Signup
-- Testing Login
-- Testing User Actions (e.g., adding emoji entries)
-- Testing Admin Actions (e.g., deleting emoji entries or users)
+- ~~Lots of Refactoring~~
+- ~~Testing Signup~~
+- ~~Testing Login~~
+- ~~Testing User Actions (e.g., adding emoji entries)~~
+- ~~Testing Admin Actions (e.g., deleting emoji entries or users)~~
 - Implementing Rate Limiting
 - Documentation
-- Begin Front End
+- ~~Begin Front End~~
