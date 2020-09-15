@@ -75,6 +75,7 @@ router.get('/:id/reports', passport.authenticate('jwt'), async (req, res, next) 
 
 router.post('/', async (req, res, next) => {
   try {
+    console.log(req.body);
     if (req.body.userType === 'admin') {
       const error = new Error('You cannot create an admin, you can only promote an existing one.');
       error.statusCode = 403;

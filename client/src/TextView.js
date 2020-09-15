@@ -23,26 +23,12 @@ export default class TextView extends Component {
   render() {
     return (
       <section>
-        <div className="jumbotron">
+        <div className="jumbotron h-50">
           <Textbox entries={this.state.entries}/>
         </div>
-        <article className="container">
+        <article className="container" id="about">
           <h1>FAQ</h1>
           <hr/>
-          <section>
-            <h2>Is my data safe?</h2>
-            <div className="alert alert-danger">
-              <p>
-                To put it shortly, <strong>no. </strong>
-                I've been working with JavaScript for about a year, and this is my first project that involves any sort of
-                user data protection. I've done my best with what I know to secure your passwords, but I would heavily advise against
-                using a username/password combination with my website that you use for other websites as well.
-              </p>
-            </div>
-            In other words, I try my hardest to protect the username/password pairs, but I don't think I know quite enough for you
-            to put the same faith in me that you put into your banks and Facebook accounts.
-          </section>
-          <br />
           <section>
             <h2>What is this?</h2>
             <p>This website is a tool for creating emojipastas.</p>

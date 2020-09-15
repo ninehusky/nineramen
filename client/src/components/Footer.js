@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 
-export default class extends Component {
+export default class Footer extends Component {
   render() {
     return(
-      <footer className="footer">
+      <footer className="footer fixed-bottom">
         <nav className="navbar bg-dark text-light">
           a short film by ninehusky
           <ul className="nav navbar-default justify-content-end">

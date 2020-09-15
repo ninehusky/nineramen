@@ -17,8 +17,8 @@ export default class Navbar extends Component {
           </li>
         </ul>
         <span className="navbar-text">
-          <button type="button" className="btn btn-primary">Sign Up</button>
-          <button type="button" className="btn btn-light">Login</button>
+          <button type="button" className="btn btn-primary" disabled>Sign Up</button>
+          <button type="button" className="btn btn-light" disabled>Login</button>
         </span>
       </nav>
     );

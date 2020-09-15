@@ -7,17 +7,6 @@ export default class Textbox extends Component {
     };
   }
 
-  componentDidMount() {
-    fetch('http://localhost:5000/entries')
-      .then((response) => response.json())
-      .then((data) => {
-        this.setState({
-          entries: data,
-        });
-      })
-      .catch(console.error);
-  }
-
   handleChange(event) {
     const text = event.target.value.split(' ');
     let emojifiedText = "";
