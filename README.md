@@ -17,11 +17,9 @@ If you look at the emojipasta in the section above, you'll find that words of in
 
 These word-emoji connections will be precisely what the nineramen app will rely on - ideally, in the future there will be a global database of word-emoji connections that can be added from any user with an account in the nineramen system.
 
-## What about mean people?
+## What about people who say offensive things?
 
-The most memorable copypastas, in my opinion, are those that make fun of a certain type of people (e.g., gamers). In fact, I can't think of a copypasta off the top of my head that *doesn't* engage in some form of ridiculing. With this in mind, I don't think I could make an emojipasta-centered app that completely avoids the possibility of teasing.
-
-That being said, there are obvious groups of people that should not be made fun of with a copypasta. To spell this out further, I mean that it is unacceptable to ridicule people of certain ethnicities, sexual orientations, etc. While I can't control what a user will type into the app, I'm working on a way for users to be able to report offensive word-emoji pairs so that admins can remove problematic ones.
+There are obvious groups of people that should not be made fun of with a copypasta. To spell this out further, I mean that it is unacceptable to ridicule certain ethnicities, sexual orientations, etc. While I can't control what a user will type into the app, I'm working on a way for users to be able to report offensive word-emoji pairs so that admins can remove problematic ones.
 
 ## Development Timeline
 
